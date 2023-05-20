@@ -1,11 +1,20 @@
 namespace Markwardt;
 
+public static class FailableUtils
+{
+    public static Failable<T> AsFailable<T>(this T result)
+        => Failable.Success(result);
+}
+
 public class Failable
 {
-    private static Failable success = new Failable(null);
+    private static readonly Failable success = new Failable(null);
 
     public static implicit operator Task<Failable>(Failable failable)
         => Task.FromResult<Failable>(failable);
+
+    public static implicit operator ValueTask<Failable>(Failable failable)
+        => new ValueTask<Failable>(failable);
 
     public static implicit operator Failable(Failure failure)
         => new Failable(failure);
@@ -60,6 +69,9 @@ public class Failable<T> : Failable
 {
     public static implicit operator Task<Failable<T>>(Failable<T> failable)
         => Task.FromResult<Failable<T>>(failable);
+        
+    public static implicit operator ValueTask<Failable<T>>(Failable<T> failable)
+        => new ValueTask<Failable<T>>(failable);
 
     public static implicit operator Failable<T>(T value)
         => new Failable<T>(value);

@@ -8,6 +8,12 @@ public record Failure(string Message)
     public static implicit operator Exception(Failure failure)
         => failure.AsException();
 
+    public Failable AsFailable()
+        => Failable.Fail(this);
+
+    public Failable<T> AsFailable<T>()
+        => Failable.Fail<T>(this);
+
     public virtual Exception AsException()
         => new FailedOperationException(Message);
 
