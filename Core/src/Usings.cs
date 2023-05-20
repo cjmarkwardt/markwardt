@@ -8,3 +8,6 @@ global using System.Runtime.CompilerServices;
 global using System.Reactive.Subjects;
 global using System.Reactive.Threading.Tasks;
 global using System.Reactive.Linq;
+global using System.Numerics;
+global using System.ComponentModel;
+global using System.Collections.Specialized;
