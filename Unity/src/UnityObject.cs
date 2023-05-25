@@ -1,8 +1,53 @@
 namespace Markwardt;
 
+public class UnityObjectt : IObject3d
+{
+    public ISimulation3d Simulation => throw new NotImplementedException();
 
+    public IObject3d? Parent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-public class UnityObject : MonoBehaviour, IWorldObject
+    public IShiftableSequence<IObject3d> Children => throw new NotImplementedException();
+
+    public IEnumerable<ISimulationBehavior> Behaviors => throw new NotImplementedException();
+
+    public ITransform3d GlobalTransform => throw new NotImplementedException();
+
+    public ITransform3d LocalTransform => throw new NotImplementedException();
+
+    public bool IsDisposed => throw new NotImplementedException();
+
+    public void AddBehavior(ISimulationBehavior behavior)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IObject3d CreateChild(string name)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemoveBehavior(ISimulationBehavior behavior)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Update()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class UnityObject : MonoBehaviour, ISimulationObject
 {
     public static UnityObject Construct(IWorldRoot root, string name)
     {
@@ -15,13 +60,13 @@ public class UnityObject : MonoBehaviour, IWorldObject
 
     public IWorldRoot Root { get; private set; } = default!;
 
-    public IWorldObject? Parent
+    public ISimulationObject? Parent
     {
         get => transform.parent == null ? null : transform.parent.gameObject.RequireComponent<UnityObject>();
         set => transform.parent = value == null ? null : ((UnityObject)value).gameObject.transform;
     }
 
-    public IEnumerable<IWorldObject> Children => transform.Cast<Transform>().Select(x => x.gameObject.RequireComponent<UnityObject>());
+    public IEnumerable<ISimulationObject> Children => transform.Cast<Transform>().Select(x => x.gameObject.RequireComponent<UnityObject>());
 
     public Vector3 GlobalPosition { get => transform.position.ToGeneralVector(); set => transform.position = value.ToUnityVector(); }
     public Vector3 GlobalRotation { get => transform.rotation.ToGeneralVector(); set => transform.rotation = value.ToQuaternion(); }
@@ -30,21 +75,21 @@ public class UnityObject : MonoBehaviour, IWorldObject
     public Vector3 LocalRotation { get => transform.localRotation.ToGeneralVector(); set => transform.localRotation = value.ToQuaternion(); }
     public Vector3 LocalScale { get => transform.localScale.ToGeneralVector(); set => transform.localScale = value.ToUnityVector(); }
 
-    public IEnumerable<IWorldBehavior> Behaviors => gameObject.GetComponents<UnityBehavior>();
+    public IEnumerable<ISimulationBehavior> Behaviors => gameObject.GetComponents<UnityBehavior>();
 
-    public void AddBehavior(IWorldBehavior behavior)
+    public void AddBehavior(ISimulationBehavior behavior)
     {
         throw new NotImplementedException();
     }
 
-    public void RemoveBehavior(IWorldBehavior behavior)
+    public void RemoveBehavior(ISimulationBehavior behavior)
     {
         throw new NotImplementedException();
     }
 
     private void Start()
     {
-        foreach (IWorldBehavior behavior in Behaviors)
+        foreach (ISimulationBehavior behavior in Behaviors)
         {
             behavior.Start();
         }
@@ -52,7 +97,7 @@ public class UnityObject : MonoBehaviour, IWorldObject
 
     private void Update()
     {
-        foreach (IWorldBehavior behavior in Behaviors)
+        foreach (ISimulationBehavior behavior in Behaviors)
         {
             behavior.Update();
         }
@@ -60,7 +105,7 @@ public class UnityObject : MonoBehaviour, IWorldObject
 
     private void OnDestroy()
     {
-        foreach (IWorldBehavior behavior in Behaviors)
+        foreach (ISimulationBehavior behavior in Behaviors)
         {
             behavior.Destroy();
         }

@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-public class UnityBehavior : WorldBehavior
+public class UnityBehavior : SimulationBehavior
 {
     protected GameObject GameObject => ((UnityObject)base.Object).gameObject;
 }

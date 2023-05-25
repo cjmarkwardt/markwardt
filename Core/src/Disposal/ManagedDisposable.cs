@@ -1,13 +1,20 @@
 namespace Markwardt;
 
-public abstract class ManagedDisposable : IDisposable
+public interface IManagedDisposable : ITrackedDisposable
+{
+    IDisposalManager Disposal { get; }
+}
+
+public abstract class ManagedDisposable : IManagedDisposable
 {
     public ManagedDisposable()
     {
-        Disposal.OnDisposal(OnDisposal);
+        Disposal.AddHandler(OnDisposal);
     }
 
-    protected IDisposalManager Disposal { get; } = new DisposalManager();
+    public bool IsDisposed => Disposal.IsDisposed;
+
+    public IDisposalManager Disposal { get; } = new DisposalManager();
 
     public void Dispose()
         => Disposal.Dispose();

@@ -32,4 +32,17 @@ public static class DisposableUtils
 
     public static async Task TryDisposeAllAsync(this IEnumerable<object?> targets)
         => await Task.WhenAll(targets.Select(t => t.TryDisposeAsync().AsTask()));
+
+    public static void DisposalAll<T>(this IEnumerable<T> targets)
+        where T : IDisposable
+    {
+        foreach (T target in targets)
+        {
+            target.Dispose();
+        }
+    }
+
+    public static async Task DisposeAllAsync<T>(this IEnumerable<T> targets)
+        where T : IAsyncDisposable
+        => await Task.WhenAll(targets.Select(x => x.DisposeAsync().AsTask()));
 }

@@ -1,25 +1,30 @@
 namespace Markwardt;
 
-public interface IDisposalManager : IDisposable
+public interface IDisposalManager : ITrackedDisposable
 {
-    bool IsDisposed { get; }
+    CancellationToken ExecutionCancellation { get; }
 
     void Verify();
 
-    void Add(params object?[] targets);
-    void Remove(params object?[] targets);
+    void Track(params object?[] targets);
+    void Untrack(params object?[] targets);
 
-    void OnDisposal(Action action);
+    void AddHandler(Action action);
+
+    void ForkDispose(params object?[] targets);
 }
 
 public class DisposalManager : IDisposalManager
 {
-    private readonly HashSet<Action> disposalActions = new();
+    private readonly CancellationTokenSource executionCancellation = new();
+    private readonly HashSet<Action> handlers = new();
     private readonly HashSet<object> targets = new();
 
     protected IEnumerable<object> Targets => targets;
 
     public bool IsDisposed { get; protected set; }
+
+    public CancellationToken ExecutionCancellation => executionCancellation.Token;
 
     public void Verify()
     {
@@ -29,7 +34,7 @@ public class DisposalManager : IDisposalManager
         }
     }
 
-    public void Add(params object?[] targets)
+    public void Track(params object?[] targets)
     {
         foreach (object target in targets.WhereNotNull())
         {
@@ -37,7 +42,7 @@ public class DisposalManager : IDisposalManager
         }
     }
 
-    public void Remove(params object?[] targets)
+    public void Untrack(params object?[] targets)
     {
         foreach (object target in targets.WhereNotNull())
         {
@@ -45,19 +50,40 @@ public class DisposalManager : IDisposalManager
         }
     }
 
-    public void OnDisposal(Action action)
-        => disposalActions.Add(action);
+    public void AddHandler(Action action)
+        => handlers.Add(action);
+
+    public virtual void ForkDispose(params object?[] targets)
+    {
+        Untrack(targets);
+
+        foreach (object? target in targets)
+        {
+            target.TryDispose();
+        }
+    }
 
     public void Dispose()
     {
         if (!IsDisposed)
         {
             IsDisposed = true;
+            CancelExecution();
             PreDispose();
-            disposalActions.InvokeAll();
+            handlers.InvokeAll();
             targets.TryDisposeAll();
         }
     }
 
-    protected virtual void PreDispose() { }
+    protected void CancelExecution()
+    {
+        executionCancellation.Cancel();
+        executionCancellation.Dispose();
+    }
+
+    protected virtual void PreDispose()
+    {
+        executionCancellation.Cancel();
+        executionCancellation.Dispose();
+    }
 }

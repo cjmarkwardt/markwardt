@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-public interface IServiceContainer : IServiceCreator, IMultiDisposable
+public interface IServiceContainer : IServiceCreator, IFullDisposable
 {
     ValueTask<object?> TryResolve(Type service);
 }

@@ -1,17 +1,30 @@
 namespace Markwardt;
 
-public abstract class ManagedAsyncDisposable : ManagedDisposable, IAsyncDisposable
+public interface IManagedAsyncDisposable : IFullDisposable
+{
+    IAsyncDisposalManager Disposal { get; }
+}
+
+public abstract class ManagedAsyncDisposable : IManagedAsyncDisposable
 {
     public ManagedAsyncDisposable()
     {
-        Disposal.OnSharedDisposal(OnSharedDisposal);
-        Disposal.OnAsyncDisposal(OnAsyncDisposal);
+        Disposal.AddHandler(OnDisposal);
+        Disposal.AddSharedHandler(OnSharedDisposal);
+        Disposal.AddAsyncHandler(OnAsyncDisposal);
     }
 
-    protected new IAsyncDisposalManager Disposal { get; } = new AsyncDisposalManager();
+    public bool IsDisposed => Disposal.IsDisposed;
+
+    public IAsyncDisposalManager Disposal { get; } = new AsyncDisposalManager();
+
+    public void Dispose()
+        => Disposal.Dispose();
 
     public async ValueTask DisposeAsync()
         => await Disposal.DisposeAsync();
+
+    protected virtual void OnDisposal() { }
 
     protected virtual void OnSharedDisposal() { }
 

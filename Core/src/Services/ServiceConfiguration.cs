@@ -75,7 +75,7 @@ public class ServiceConfiguration : ManagedAsyncDisposable, IServiceConfiguratio
             if (!singletons.TryGetValue(service, out AsyncLazy<object>? singleton))
             {
                 singleton = new AsyncLazy<object>(async () => await target.Builder.Build(this, null, typeArguments));
-                Disposal.Add(singleton);
+                Disposal.Track(singleton);
                 singletons.Add(service, singleton);
             }
 

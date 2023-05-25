@@ -14,6 +14,12 @@ public static class TaskUtils
     public static ValueTask<TResult> AsValueTask<TResult>(this Task<TResult> task)
         => new ValueTask<TResult>(task);
 
+    public static Task WhenAll(this IEnumerable<Task> tasks)
+        => Task.WhenAll(tasks);
+
+    public static Task<Task> WhenAny(this IEnumerable<Task> tasks)
+        => Task.WhenAny(tasks);
+
     public static Type GetResultType(this Task task)
     {
         Type type = task.GetType();

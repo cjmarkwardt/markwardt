@@ -4,5 +4,5 @@ namespace Markwardt;
 
 public class UnityRoot : IWorldRoot
 {
-    public IEnumerable<IWorldObject> Objects => SceneManager.GetActiveScene().GetRootGameObjects()
+    public IEnumerable<ISimulationObject> Objects => SceneManager.GetActiveScene().GetRootGameObjects()
 }
