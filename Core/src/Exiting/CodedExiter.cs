@@ -2,7 +2,7 @@ namespace Markwardt;
 
 public abstract class CodedExiter : ServiceExiter
 {
-    protected CodedExiter(IServiceContainer services)
+    protected CodedExiter(IObjectContainer services)
         : base(services) { }
 
     protected sealed override void ExecuteExit(object? info)

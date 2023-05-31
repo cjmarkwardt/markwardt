@@ -20,3 +20,10 @@ public class Argument<T> : IEquatable<Argument<T>>
     public override int GetHashCode()
         => HashCode.Combine(Name, Value);
 }
+
+public interface IArgument<T>
+{
+    string Name { get; }
+
+    
+}

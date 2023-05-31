@@ -10,6 +10,7 @@ public class AsyncLazy<T>
     public AsyncLazy(T value)
         : this(() => new ValueTask<T>(value)) { }
 
+    public bool IsValueCreationStarted => task != null;
     public bool IsValueCreating => task != null && !task.IsCompleted;
     public bool IsValueCreated => task != null && task.IsCompleted;
 

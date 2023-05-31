@@ -2,7 +2,7 @@ namespace Markwardt;
 
 public class EnvironmentExiter : CodedExiter
 {
-    public EnvironmentExiter(IServiceContainer services)
+    public EnvironmentExiter(IObjectContainer services)
         : base(services) { }
 
     protected override void ExecuteCodedExit(int exitCode)

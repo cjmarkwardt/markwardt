@@ -2,12 +2,12 @@ namespace Markwardt;
 
 public abstract class ServiceExiter : IExiter
 {
-    protected ServiceExiter(IServiceContainer services)
+    protected ServiceExiter(IObjectContainer services)
     {
         this.services = services;
     }
 
-    private readonly IServiceContainer services;
+    private readonly IObjectContainer services;
 
     public bool IsExiting { get; private set; }
 

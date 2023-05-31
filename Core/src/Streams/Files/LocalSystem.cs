@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-[Singleton<LocalSystem>]
+[Singleton]
 public interface ILocalSystem : IFileSystem { }
 
 public class LocalSystem : ILocalSystem

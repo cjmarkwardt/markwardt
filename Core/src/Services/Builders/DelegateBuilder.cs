@@ -2,13 +2,13 @@ namespace Markwardt;
 
 public static class DelegateBuilderUtils
 {
-    public static IServiceBuilder ThroughDelegate(this IServiceBuilder builder, Type @delegate)
+    public static IObjectBuilder ThroughDelegate(this IObjectBuilder builder, Type @delegate)
         => !@delegate.IsDelegate() ? builder : new DelegateBuilder(builder, @delegate);
 }
 
-public class DelegateBuilder : IServiceBuilder
+public class DelegateBuilder : IObjectBuilder
 {
-    public DelegateBuilder(IServiceBuilder builder, Type @delegate)
+    public DelegateBuilder(IObjectBuilder builder, Type @delegate)
     {
         this.builder = builder;
 
@@ -22,19 +22,27 @@ public class DelegateBuilder : IServiceBuilder
         }
 
         this.type = type;
+        genericTargeter = new(@delegate);
     }
 
-    private readonly IServiceBuilder builder;
+    private readonly IObjectBuilder builder;
+    private readonly GenericTypeTargeter genericTargeter;
     private readonly DelegateType type;
     private readonly Dictionary<IValueDictionary<string, Type>, Delegate> delegates = new();
 
-    public ValueTask<object> Build(IServiceContainer container, IEnumerable<Argument<object?>>? arguments = null, IEnumerable<Argument<Type>>? typeArguments = null)
+    public async ValueTask<object> Build(IObjectContainer container, IArgumentGenerator? argumentGenerator = null)
     {
-        IValueDictionary<string, Type> genericId = typeArguments.ToValueDictionary(a => a.Name, a => a.Value);
-        if (!delegates.TryGetValue(genericId, out Delegate? @delegate))
+        IDictionary<string, object?>? arguments = null;
+        if (argumentGenerator != null)
         {
-            @delegate = type.Close(typeArguments).Implement(arguments => builder.Build(container, arguments, typeArguments)!);
-            delegates.Add(genericId, @delegate);
+            arguments = await argumentGenerator.Generate(container);
+        }
+
+        IValueDictionary<string, Type> typeArguments = genericTargeter.GetTypeArguments(arguments);
+        if (!delegates.TryGetValue(typeArguments, out Delegate? @delegate))
+        {
+            @delegate = type.Close(typeArguments).Implement(arguments => builder.Build(container, argumentGenerator)!);
+            delegates.Add(typeArguments, @delegate);
         }
 
         return new ValueTask<object>(@delegate);

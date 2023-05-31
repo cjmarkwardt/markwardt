@@ -1,16 +1,18 @@
 namespace Markwardt;
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Delegate)]
-public class SingletonAttribute : ServiceAttribute
+public class SingletonAttribute : Attribute
 {
-    public SingletonAttribute(Type implementation)
-        : base(ServiceLifetime.Singleton, implementation) { }
+    public SingletonAttribute(Type? arguments = null)
+    {
+        Arguments = arguments;
+    }
+
+    public Type? Arguments { get; }
 }
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Delegate)]
-public class SingletonAttribute<TImplementation> : SingletonAttribute
-    where TImplementation : class
+public class SingletonAttribute<TArguments> : SingletonAttribute
+    where TArguments : IArgumentGenerator
 {
     public SingletonAttribute()
-        : base(typeof(TImplementation)) { }
+        : base(typeof(TArguments)) { }
 }

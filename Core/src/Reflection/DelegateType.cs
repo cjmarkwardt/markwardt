@@ -42,18 +42,17 @@ public class DelegateType
     public delegate object? Implementation(IEnumerable<Argument<object?>> arguments);
     public delegate ValueTask<object?> AsyncImplementation(IEnumerable<Argument<object?>> arguments);
 
-    public DelegateType Close(IEnumerable<Argument<Type>>? typeArguments)
+    public DelegateType Close(IReadOnlyDictionary<string, Type>? typeArguments)
     {
         if (!Type.IsGenericTypeDefinition)
         {
             return this;
         }
 
-        IReadOnlyDictionary<string, Type> typeArgumentLookup = typeArguments?.ToDictionary(a => a.Name, a => a.Value) ?? new Dictionary<string, Type>();
         Type[] types = Type.GetGenericArguments();
         for (int i = 0; i < types.Length; i++)
         {
-            if (typeArgumentLookup.TryGetValue(types[i].Name.ToLower(), out Type? type))
+            if (typeArguments != null && typeArguments.TryGetValue(types[i].Name.ToLower(), out Type? type))
             {
                 types[i] = type;
             }
