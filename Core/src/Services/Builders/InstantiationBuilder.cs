@@ -19,9 +19,9 @@ public class InstantiationBuilder : IObjectBuilder
     private readonly TypeGeneralizer generalizer;
     private readonly Dictionary<IValueDictionary<string, Type>, InvocationBuilder> invokers = new();
 
-    public async ValueTask<object> Build(IObjectResolver resolver, Maybe<IObjectArgumentGenerator> argumentGenerator = default)
+    public async ValueTask<object> Build(IObjectContainer container, Maybe<IObjectArgumentGenerator> argumentGenerator = default)
     {
-        Maybe<IDictionary<string, object?>> arguments = await argumentGenerator.Generate(resolver);
+        Maybe<IDictionary<string, object?>> arguments = await argumentGenerator.Generate(container);
         IValueDictionary<string, Type> typeArguments = generalizer.GetTypeArguments(arguments);
         if (!invokers.TryGetValue(typeArguments, out InvocationBuilder? invoker))
         {
@@ -29,7 +29,7 @@ public class InstantiationBuilder : IObjectBuilder
             invokers.Add(typeArguments, invoker);
         }
 
-        return await invoker.Build(resolver, argumentGenerator);
+        return await invoker.Build(container, argumentGenerator);
     }
 
     private MethodBase? LocateMethod(Type type)
@@ -45,7 +45,7 @@ public class InstantiationBuilder : IObjectBuilder
             return attributed;
         }
 
-        MethodBase? staticCreate = methods.OfType<MethodInfo>().Where(m => m.Name == "Construct").OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();
+        MethodBase? staticCreate = methods.OfType<MethodInfo>().Where(m => m.Name == "Create").OrderByDescending(m => m.GetParameters().Length).FirstOrDefault();
         if (staticCreate != null)
         {
             return staticCreate;

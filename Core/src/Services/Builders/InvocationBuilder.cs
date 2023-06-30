@@ -12,9 +12,9 @@ public class InvocationBuilder : IObjectBuilder
     private readonly MethodGeneralizer generalizer;
     private readonly Dictionary<IValueDictionary<string, Type>, Invocation> invocations = new();
 
-    public async ValueTask<object> Build(IObjectResolver resolver, Maybe<IObjectArgumentGenerator> argumentGenerator = default)
+    public async ValueTask<object> Build(IObjectContainer container, Maybe<IObjectArgumentGenerator> argumentGenerator = default)
     {
-        Maybe<IDictionary<string, object?>> arguments = await argumentGenerator.Generate(resolver);
+        Maybe<IDictionary<string, object?>> arguments = await argumentGenerator.Generate(container);
         IValueDictionary<string, Type> typeArguments = generalizer.GetTypeArguments(arguments);
         if (!invocations.TryGetValue(typeArguments, out Invocation? invoker))
         {
@@ -22,7 +22,7 @@ public class InvocationBuilder : IObjectBuilder
             invocations.Add(typeArguments, invoker);
         }
 
-        return await invoker.Invoke(resolver, arguments.GetOrDefault());
+        return await invoker.Invoke(container, arguments.GetOrDefault());
     }
 
     private class Invocation
@@ -38,8 +38,8 @@ public class InvocationBuilder : IObjectBuilder
         private readonly MethodBase method;
         private readonly InvokeTarget target;
 
-        public async ValueTask<object> Invoke(IObjectResolver container, IDictionary<string, object?>? arguments)
-            => await target.Invoke(await ResolveArguments(container, arguments));
+        public async ValueTask<object> Invoke(IObjectResolver resolver, IDictionary<string, object?>? arguments)
+            => await target.Invoke(await ResolveArguments(resolver, arguments));
 
         private InvokeTarget GenerateTarget()
         {
@@ -87,7 +87,7 @@ public class InvocationBuilder : IObjectBuilder
             return Expression.Lambda<InvokeTarget>(body, injectedArguments).Compile();
         }
 
-        private async ValueTask<object?[]?> ResolveArguments(IObjectResolver container, IDictionary<string, object?>? arguments)
+        private async ValueTask<object?[]?> ResolveArguments(IObjectResolver resolver, IDictionary<string, object?>? arguments)
         {
             IReadOnlyList<ParameterInfo> parameters = method.GetParameters();
             if (!parameters.Any())
@@ -106,7 +106,7 @@ public class InvocationBuilder : IObjectBuilder
                 }
                 else
                 {
-                    Maybe<object?> instance = await container.Resolve(parameter.ParameterType);
+                    Maybe<object?> instance = await resolver.Resolve(parameter.ParameterType);
                     if (instance.HasValue)
                     {
                         value = instance.Value;

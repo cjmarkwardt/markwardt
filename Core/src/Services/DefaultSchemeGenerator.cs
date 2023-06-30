@@ -3,12 +3,42 @@ namespace Markwardt;
 public class DefaultSchemeGenerator : IObjectSchemeGenerator
 {
     public Maybe<IObjectScheme> Generate(ObjectTag tag)
-        => tag.Scheme != null ? 
+    {
+        if (tag.Scheme != null)
+        {
+            return ((IObjectScheme)Activator.CreateInstance(tag.Scheme)).AsMaybe();
+        }
+        else
+        {
+            return Scan(tag.Type);
+        }
+    }
 
-    public Maybe<IObjectScheme> Generate(IObjectScheme target)
-        => Maybe.If(target.IsDefault(), () => Scan(target.Type));
+    private Maybe<IObjectScheme> Scan(Type type)
+    {
+        if (type.TryGetCustomAttribute(out ServiceAttribute? serviceAttribute))
+        {
+            return serviceAttribute.GetScheme(type).AsMaybe();
+        }
+        else if (DelegateType.Create(type, out DelegateType? delegateType) && delegateType.Return.TryGetGenericTypeDefinition() == typeof(ValueTask<>))
+        {
+            implementation = (delegateType.Return.GetGenericArguments().First(), null);
+        }
+        else if (type.IsInterface && type.TryGetInterfaceImplementation(out Type? interfaceImplementation))
+        {
+            return new ImplementationScheme(interfaceImplementation);
+        }
+        else if (type.IsInstantiable())
+        {
+            return new ImplementationScheme(type);
+        }
+        else
+        {
+            return default;
+        }
+    }
 
-    public Maybe<IObjectScheme> Scan(Type type)
+    /*public Maybe<IObjectScheme> Scan(Type type)
     {
         Type? implementation = null;
         Maybe<IObjectArgumentGenerator> arguments = default;
@@ -54,16 +84,10 @@ public class DefaultSchemeGenerator : IObjectSchemeGenerator
             }
         }
 
+
+
         profile = Create(type, implementation, arguments);
         return true;
-    }
-
-    public IObjectScheme? Scan(Type target)
-        => Scan(target, out IObjectScheme? profile) ? profile : null;
-
-    public bool Scan(Type target, [NotNullWhen(true)] out IObjectScheme? profile)
-    {
-        
     }
 
     private static bool GetImplementation(Type target, [NotNullWhen(true)] out (Type Type, IObjectArgumentGenerator? Arguments)? implementation)
@@ -103,5 +127,5 @@ public class DefaultSchemeGenerator : IObjectSchemeGenerator
             implementation = (implementationType, arguments);
             return true;
         }
-    }
+    }*/
 }

@@ -25,11 +25,16 @@ public static class ObjectContainerUtils
 
 public class ObjectContainer : ManagedAsyncDisposable, IObjectContainer
 {
-    public ObjectContainer(IObjectSchemeGenerator? schemeGenerator = null)
+    public ObjectContainer(IObjectContainer? parent = null, IObjectSchemeGenerator? schemeGenerator = null)
     {
+        this.parent = parent;
         this.schemeGenerator = schemeGenerator ?? new DefaultSchemeGenerator();
     }
-    
+
+    public ObjectContainer(IObjectSchemeGenerator? schemeGenerator = null)
+        : this(null, schemeGenerator) { }
+
+    private readonly IObjectContainer? parent;
     private readonly IObjectSchemeGenerator schemeGenerator;
     private readonly Dictionary<ObjectTag, Entry> entries = new();
 
@@ -47,10 +52,36 @@ public class ObjectContainer : ManagedAsyncDisposable, IObjectContainer
     }
 
     public async ValueTask<Maybe<object?>> Create(ObjectTag tag, Maybe<IObjectArgumentGenerator> arguments = default)
-        => GetEntry(tag).TryGet(out Entry? entry) && entry.CanBuild ? await entry.Build(arguments) : default;
+    {
+        if (GetEntry(tag).TryGet(out Entry? entry) && entry.CanBuild)
+        {
+            return await entry.Build(arguments);
+        }
+        else if (parent != null)
+        {
+            return await parent.Create(tag, arguments);
+        }
+        else
+        {
+            return default;
+        }
+    }
 
     public async ValueTask<Maybe<object?>> Resolve(ObjectTag tag)
-        => GetEntry(tag).TryGet(out Entry? entry) && entry.IsSingleton ? await entry.GetSingleton() : Create(tag);
+    {
+        if (GetEntry(tag).TryGet(out Entry? entry) && entry.IsSingleton)
+        {
+            return await entry.GetSingleton();
+        }
+        else if (parent != null)
+        {
+            return await parent.Resolve(tag);
+        }
+        else
+        {
+            return Create(tag);
+        }
+    }
 
     private Entry SetEntry(ObjectTag tag, IObjectScheme scheme)
     {

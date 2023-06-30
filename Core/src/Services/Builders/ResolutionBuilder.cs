@@ -2,6 +2,6 @@ namespace Markwardt;
 
 public record ResolutionBuilder(ObjectTag Tag) : IObjectBuilder
 {
-    public async ValueTask<object> Build(IObjectResolver resolver, Maybe<IObjectArgumentGenerator> arguments = default)
-        => await resolver.Resolve(Tag);
+    public async ValueTask<object> Build(IObjectContainer container, Maybe<IObjectArgumentGenerator> arguments = default)
+        => await container.Resolve(Tag);
 }

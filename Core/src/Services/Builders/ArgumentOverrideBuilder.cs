@@ -17,6 +17,6 @@ public class ArgumentOverrideBuilder : IObjectBuilder
     private readonly IObjectBuilder builder;
     private readonly IObjectArgumentGenerator generator;
 
-    public async ValueTask<object> Build(IObjectResolver resolver, Maybe<IObjectArgumentGenerator> arguments = default)
-        => await builder.Build(resolver, !arguments.HasValue ? generator.AsMaybe() : arguments.Stack(generator).AsMaybe());
+    public async ValueTask<object> Build(IObjectContainer container, Maybe<IObjectArgumentGenerator> arguments = default)
+        => await builder.Build(container, !arguments.HasValue ? generator.AsMaybe() : arguments.Stack(generator).AsMaybe());
 }
