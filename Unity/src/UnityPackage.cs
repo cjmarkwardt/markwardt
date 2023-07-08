@@ -2,9 +2,9 @@ namespace Markwardt;
 
 public class UnityPackage : IServicePackage
 {
-    public void Configure(IServiceConfiguration services)
+    public void Configure(IServiceContainer container)
     {
-        services.Configure<IConsoleWriter, UnityConsoleWriter>();
-        services.Configure<IExiter, UnityExiter>();
+        container.ConfigureConstructor<IConsoleWriter, UnityConsoleWriter>();
+        container.ConfigureConstructor<IExiter, UnityExiter>();
     }
 }

@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-[RoutedSingleton<ILocalSystem>]
+[RoutedService<ILocalSystem>]
 public interface IFileSystem : IFileViewer
 {
     FileNode GetNode(Path path);

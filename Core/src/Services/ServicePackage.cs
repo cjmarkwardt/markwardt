@@ -2,24 +2,18 @@ namespace Markwardt;
 
 public interface IServicePackage
 {
-    void Configure(IServiceConfiguration services);
-}
-
-public static class ServicePackageUtils
-{
-    public static IServicePackage AsPackage(this Action<IServiceConfiguration> configure)
-        => new ServicePackage(configure);
+    void Configure(IServiceContainer container);
 }
 
 public class ServicePackage : IServicePackage
 {
-    public ServicePackage(Action<IServiceConfiguration> configure)
+    public ServicePackage(Action<IServiceContainer> configure)
     {
         this.configure = configure;
     }
 
-    private readonly Action<IServiceConfiguration> configure;
+    private readonly Action<IServiceContainer> configure;
 
-    public void Configure(IServiceConfiguration services)
-        => configure(services);
+    public void Configure(IServiceContainer container)
+        => configure(container);
 }

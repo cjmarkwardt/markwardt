@@ -7,7 +7,7 @@ public interface ICanvasManager
         where TLayer : Enum;
 }
 
-public record CanvasManager(Canvas Canvas, IAssetCatalog Assets) : ICanvasManager
+public record CanvasManager(Canvas Canvas, IAssetCatalogOld Assets) : ICanvasManager
 {
     public RectTransform GetLayerContainer<TLayer>(TLayer layer)
         where TLayer : Enum

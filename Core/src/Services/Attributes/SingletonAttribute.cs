@@ -1,16 +1,22 @@
 namespace Markwardt;
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Delegate)]
-public class SingletonAttribute : ServiceAttribute
+public class SingletonAttribute : NaturalServiceAttribute
 {
-    public SingletonAttribute(Type implementation)
-        : base(ServiceLifetime.Singleton, implementation) { }
+    public SingletonAttribute(Type? implementation = null, Type? arguments = null)
+        : base(implementation, OpenServiceKind.Singleton, arguments) { }
 }
 
-[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Delegate)]
 public class SingletonAttribute<TImplementation> : SingletonAttribute
     where TImplementation : class
 {
     public SingletonAttribute()
         : base(typeof(TImplementation)) { }
+}
+
+public class SingletonAttribute<TImplementation, TArguments> : SingletonAttribute
+    where TImplementation : class
+    where TArguments : IServiceArgumentGenerator
+{
+    public SingletonAttribute()
+        : base(typeof(TImplementation), typeof(TArguments)) { }
 }

@@ -22,19 +22,22 @@ public class DelegateBuilder : IServiceBuilder
         }
 
         this.type = type;
+        generalizer = new(@delegate);
     }
 
     private readonly IServiceBuilder builder;
+    private readonly TypeGeneralizer generalizer;
     private readonly DelegateType type;
     private readonly Dictionary<IValueDictionary<string, Type>, Delegate> delegates = new();
 
-    public ValueTask<object> Build(IServiceContainer container, IEnumerable<Argument<object?>>? arguments = null, IEnumerable<Argument<Type>>? typeArguments = null)
+    public async ValueTask<object> Build(IServiceResolver resolver, IServiceArgumentGenerator? argumentGenerator = null)
     {
-        IValueDictionary<string, Type> genericId = typeArguments.ToValueDictionary(a => a.Name, a => a.Value);
-        if (!delegates.TryGetValue(genericId, out Delegate? @delegate))
+        IDictionary<string, object?>? arguments = await argumentGenerator.Generate(resolver);
+        IValueDictionary<string, Type> typeArguments = generalizer.GetTypeArguments(arguments);
+        if (!delegates.TryGetValue(typeArguments, out Delegate? @delegate))
         {
-            @delegate = type.Close(typeArguments).Implement(arguments => builder.Build(container, arguments, typeArguments)!);
-            delegates.Add(genericId, @delegate);
+            @delegate = generalizer.Specify(typeArguments).AsDelegate()!.Implement(arguments => builder.Build(resolver, argumentGenerator)!);
+            delegates.Add(typeArguments, @delegate);
         }
 
         return new ValueTask<object>(@delegate);

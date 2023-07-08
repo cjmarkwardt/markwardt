@@ -1,13 +1,10 @@
 namespace Markwardt;
 
-public interface IDisposalManager : IDisposable
+public interface IDisposalManager : ICompositeDisposable
 {
     bool IsDisposed { get; }
 
     void Verify();
-
-    void Add(params object?[] targets);
-    void Remove(params object?[] targets);
 
     void OnDisposal(Action action);
 }

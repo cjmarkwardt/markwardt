@@ -46,6 +46,12 @@ public class Path : IEquatable<Path?>
     public Path Prepend(Path path)
         => Prepend(path.Parts);
 
+    public string ToString(string separator)
+        => string.Join(separator, Parts);
+
+    public override string ToString()
+        => ToString("/");
+
     public bool Equals(Path? other)
         => other is not null && Parts.SequenceEqual(other.Parts);
 

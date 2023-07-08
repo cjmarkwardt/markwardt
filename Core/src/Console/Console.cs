@@ -1,4 +1,4 @@
 namespace Markwardt;
 
-[RoutedSingleton<ISystemConsole>]
+[RoutedService<ISystemConsole>]
 public interface IConsole : IConsoleWriter, IConsoleReader { }

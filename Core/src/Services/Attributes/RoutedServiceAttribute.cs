@@ -1,21 +1,23 @@
 namespace Markwardt;
 
-[AttributeUsage(AttributeTargets.Interface)]
-public class RoutedServiceAttribute : ServiceLifetimeAttribute
+public class RoutedServiceAttribute : Attribute
 {
-    public RoutedServiceAttribute(ServiceLifetime lifetime, Type targetService)
-        : base(lifetime)
+    public RoutedServiceAttribute(Type type, Type? configuration = null)
     {
-        TargetService = targetService;
+        Target = new ServiceTag(type, configuration);
     }
 
-    public Type TargetService { get; }
+    public ServiceTag Target { get; }
 }
 
-[AttributeUsage(AttributeTargets.Interface)]
-public class RoutedServiceAttribute<TTargetService> : RoutedServiceAttribute
-    where TTargetService : class
+public class RoutedServiceAttribute<TTarget> : RoutedServiceAttribute
 {
-    public RoutedServiceAttribute(ServiceLifetime lifetime)
-        : base(lifetime, typeof(TTargetService)) { }
+    public RoutedServiceAttribute()
+        : base(typeof(TTarget)) { }
+}
+
+public class RoutedServiceAttribute<TTarget, TConfiguration> : RoutedServiceAttribute
+{
+    public RoutedServiceAttribute()
+        : base(typeof(TTarget), typeof(TConfiguration)) { }
 }

@@ -28,13 +28,13 @@ public abstract class Application<TStarter> : IApplication
 {
     public async ValueTask<Failable> TryRun(IEnumerable<string> arguments, IServicePackage? package = null)
     {
-        ServiceConfiguration services = new();
-        services.Configure<IApplicationArguments>(new ApplicationArguments(arguments.ToList()));
-        package?.Configure(services);
-        Configure(services);
-        TStarter starter = await services.BuildRoot<TStarter>();
+        IServiceContainer container = new ServiceContainer();
+        container.ConfigureInstance<IApplicationArguments>(new ApplicationArguments(arguments.ToList()));
+        container.Configure(package);
+        Configure(container);
+        TStarter starter = await container.Resolve<TStarter>();
         return await starter.Start();
     }
 
-    protected virtual void Configure(IServiceConfiguration services) { }
+    protected virtual void Configure(IServiceContainer services) { }
 }

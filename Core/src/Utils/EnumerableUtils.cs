@@ -20,4 +20,10 @@ public static class EnumerableUtils
             yield return (firstEnumerator.Current, secondEnumerator.Current);
         }
     }
+
+    public static IEnumerable<T> Prepend<T>(this IEnumerable<T> enumerable, Maybe<T> item)
+        => item.HasValue ? Enumerable.Prepend(enumerable, item.Value) : enumerable;
+
+    public static IEnumerable<T> Append<T>(this IEnumerable<T> enumerable, Maybe<T> item)
+        => item.HasValue ? Enumerable.Prepend(enumerable, item.Value) : enumerable;
 }

@@ -2,7 +2,7 @@ namespace Markwardt;
 
 public interface IAssetFolder
 {
-    IAssetCatalog Assets { get; }
+    IAssetCatalogOld Assets { get; }
     
     string GetPath(string relativePath);
 }
@@ -32,7 +32,7 @@ public static class AssetFolderUtils
 
 public abstract record AssetFolder(IAssetFolder AssetParent) : IAssetFolder
 {
-    public IAssetCatalog Assets => AssetParent.Assets;
+    public IAssetCatalogOld Assets => AssetParent.Assets;
 
     protected abstract string Path { get; }
 

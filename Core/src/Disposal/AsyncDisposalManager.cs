@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-public interface IAsyncDisposalManager : IDisposalManager, IAsyncDisposable
+public interface IAsyncDisposalManager : IDisposalManager, ICompositeAsyncDisposable
 {
     void OnAsyncDisposal(AsyncAction action);
     void OnSharedDisposal(Action action);
