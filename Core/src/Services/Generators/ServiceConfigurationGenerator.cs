@@ -2,5 +2,5 @@ namespace Markwardt;
 
 public interface IServiceConfigurationGenerator
 {
-    IServiceConfiguration? Generate(ServiceTag tag);
+    IServiceConfiguration? Generate(IServiceTag tag);
 }

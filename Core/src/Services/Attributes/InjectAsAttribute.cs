@@ -1,29 +1,23 @@
 namespace Markwardt;
 
-public class InjectAsAttribute : Attribute
+[AttributeUsage(AttributeTargets.Parameter)]
+public class InjectAsAttribute : BaseInjectAttribute
 {
-    public InjectAsAttribute(ServiceTag tag)
+    public InjectAsAttribute(Type type)
     {
-        Tag = tag;
+        Type = type;
     }
 
-    public InjectAsAttribute(Type type, Type? configuration = null)
-        : this(new ServiceTag(type, configuration)) { }
+    public Type Type { get; }
 
-    public ServiceTag Tag { get; }
+    public override IServiceTag GetTarget(Type type)
+        => new TypeTag(Type);
 }
 
+[AttributeUsage(AttributeTargets.Parameter)]
 public class InjectAsAttribute<T> : InjectAsAttribute
     where T : notnull
 {
     public InjectAsAttribute()
-        : base(ServiceTag.Create<T>()) { }
-}
-
-public class InjectAsAttribute<T, TConfiguration> : InjectAsAttribute
-    where T : notnull
-    where TConfiguration : IServiceConfiguration, new()
-{
-    public InjectAsAttribute()
-        : base(ServiceTag.Create<T, TConfiguration>()) { }
+        : base(typeof(T)) { }
 }

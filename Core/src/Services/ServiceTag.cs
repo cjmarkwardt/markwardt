@@ -1,13 +1,17 @@
 namespace Markwardt;
 
-public record ServiceTag(Type Type, Type? Configuration = null)
-{
-    public static ServiceTag Create<T>()
-        where T : notnull
-        => new ServiceTag(typeof(T));
+public interface IServiceTag { }
 
-    public static ServiceTag Create<T, TConfiguration>()
+public record TypeTag(Type Type) : IServiceTag
+{
+    public static TypeTag Create<T>()
         where T : notnull
+        => new TypeTag(typeof(T));
+}
+
+public record ConfigurationTag(Type Configuration) : IServiceTag
+{
+    public static ConfigurationTag Create<TConfiguration>()
         where TConfiguration : IServiceConfiguration, new()
-        => new ServiceTag(typeof(T), typeof(TConfiguration));
+        => new ConfigurationTag(typeof(TConfiguration));
 }

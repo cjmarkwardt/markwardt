@@ -2,27 +2,31 @@ namespace Markwardt;
 
 public class DefaultConfigurationGenerator : IServiceConfigurationGenerator
 {
-    public IServiceConfiguration? Generate(ServiceTag tag)
+    public IServiceConfiguration? Generate(IServiceTag tag)
     {
-        if (tag.Configuration != null)
+        if (tag is ConfigurationTag configurationTag)
         {
-            return (IServiceConfiguration)Activator.CreateInstance(tag.Configuration);
+            return (IServiceConfiguration)Activator.CreateInstance(configurationTag.Configuration);
+        }
+        else if (tag is TypeTag typeTag)
+        {
+            return Scan(typeTag.Type);
         }
         else
         {
-            return Scan(tag.Type);
+            return null;
         }
     }
 
     private IServiceConfiguration? Scan(Type type)
     {
-        if (type.TryGetCustomAttribute(out IServiceAttribute? serviceAttribute))
+        if (type.TryGetCustomAttribute(out BaseServiceAttribute? serviceAttribute))
         {
             return serviceAttribute.GetConfiguration(type);
         }
-        else if (type.TryGetCustomAttribute(out RoutedServiceAttribute? routedServiceAttribute))
+        else if (type.TryGetCustomAttribute(out BaseSubstituteAttribute? substituteAttribute))
         {
-            return new RouteConfiguration(routedServiceAttribute.Target);
+            return new SubstituteConfiguration(substituteAttribute.GetSubstitute(type));
         }
         else if (NaturalConfiguration.TryGet(type, out IServiceConfiguration? naturalConfiguration))
         {

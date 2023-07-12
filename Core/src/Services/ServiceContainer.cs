@@ -2,8 +2,8 @@ namespace Markwardt;
 
 public interface IServiceContainer : IServiceResolver, IMultiDisposable
 {
-    void Configure(ServiceTag tag, IServiceConfiguration configuration);
-    void Clear(ServiceTag tag);
+    void Configure(IServiceTag tag, IServiceConfiguration configuration);
+    void Clear(IServiceTag tag);
 
     void Configure(IServicePackage? package)
     {
@@ -15,18 +15,18 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
 
     void Configure<T>(IServiceConfiguration configuration)
         where T : notnull
-        => Configure(ServiceTag.Create<T>(), configuration);
+        => Configure(TypeTag.Create<T>(), configuration);
 
-    void ConfigureRoute<T, TTarget>(IServiceResolver? resolver = null)
+    void ConfigureSubstitute<T, TTarget>(IServiceResolver? resolver = null)
         where T : notnull
         where TTarget : notnull
-        => Configure<T>(new RouteConfiguration(ServiceTag.Create<TTarget>(), resolver));
+        => Configure<T>(new SubstituteConfiguration(TypeTag.Create<TTarget>(), resolver));
 
-    void ConfigureRoute<T, TTarget, TTargetConfiguration>(IServiceResolver? resolver = null)
+    void ConfigureSubstitute<T, TTarget, TTargetConfiguration>(IServiceResolver? resolver = null)
         where T : notnull
         where TTarget : notnull
         where TTargetConfiguration : IServiceConfiguration, new()
-        => Configure<T>(new RouteConfiguration(ServiceTag.Create<TTarget, TTargetConfiguration>(), resolver));
+        => Configure<T>(new SubstituteConfiguration(ConfigurationTag.Create<TTargetConfiguration>(), resolver));
 
     void ConfigureInstance<T>(T instance, bool dispose = true)
         where T : notnull
@@ -69,7 +69,7 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
     void ConfigureSource<T, TSource>(AsyncFunc<TSource, T> getter, ServiceKind kind = ServiceKind.Singleton)
         where T : notnull
         where TSource : notnull
-        => Configure<T>(new SourceConfiguration(ServiceTag.Create<TSource>(), async source => await getter((TSource)source), kind));
+        => Configure<T>(new SourceConfiguration(TypeTag.Create<TSource>(), async source => await getter((TSource)source), kind));
 
     void ConfigureSource<T, TSource>(Func<TSource, T> getter, ServiceKind kind = ServiceKind.Singleton)
         where T : notnull
@@ -80,7 +80,7 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
         where T : notnull
         where TSource : notnull
         where TSourceConfiguration : IServiceConfiguration, new()
-        => Configure<T>(new SourceConfiguration(ServiceTag.Create<TSource, TSourceConfiguration>(), async source => await getter((TSource)source), kind));
+        => Configure<T>(new SourceConfiguration(TypeTag.Create<TSourceConfiguration>(), async source => await getter((TSource)source), kind));
 
     void ConfigureSource<T, TSource, TSourceConfiguration>(Func<TSource, T> getter, ServiceKind kind = ServiceKind.Singleton)
         where T : notnull
@@ -91,20 +91,20 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
     void ConfigureSpecific<T, TConfiguration>(IServiceConfiguration configuration)
         where T : notnull
         where TConfiguration : IServiceConfiguration, new()
-        => Configure(ServiceTag.Create<T, TConfiguration>(), configuration);
+        => Configure(TypeTag.Create<TConfiguration>(), configuration);
 
-    void ConfigureSpecificRoute<T, TConfiguration, TTarget>(IServiceResolver? resolver = null)
+    void ConfigureSpecificSubstitute<T, TConfiguration, TTarget>(IServiceResolver? resolver = null)
         where T : notnull
         where TConfiguration : IServiceConfiguration, new()
         where TTarget : notnull
-        => ConfigureSpecific<T, TConfiguration>(new RouteConfiguration(ServiceTag.Create<TTarget>(), resolver));
+        => ConfigureSpecific<T, TConfiguration>(new SubstituteConfiguration(TypeTag.Create<TTarget>(), resolver));
 
-    void ConfigureSpecificRoute<T, TConfiguration, TTarget, TTargetConfiguration>(IServiceResolver? resolver = null)
+    void ConfigureSpecificSubstitute<T, TConfiguration, TTarget, TTargetConfiguration>(IServiceResolver? resolver = null)
         where T : notnull
         where TConfiguration : IServiceConfiguration, new()
         where TTarget : notnull
         where TTargetConfiguration : IServiceConfiguration, new()
-        => ConfigureSpecific<T, TConfiguration>(new RouteConfiguration(ServiceTag.Create<TTarget, TTargetConfiguration>(), resolver));
+        => ConfigureSpecific<T, TConfiguration>(new SubstituteConfiguration(ConfigurationTag.Create<TTargetConfiguration>(), resolver));
 
     void ConfigureSpecificInstance<T, TConfiguration>(T instance, bool dispose = true)
         where T : notnull
@@ -157,7 +157,7 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
         where T : notnull
         where TConfiguration : IServiceConfiguration, new()
         where TSource : notnull
-        => ConfigureSpecific<T, TConfiguration>(new SourceConfiguration(ServiceTag.Create<TSource>(), async source => await getter((TSource)source), kind));
+        => ConfigureSpecific<T, TConfiguration>(new SourceConfiguration(TypeTag.Create<TSource>(), async source => await getter((TSource)source), kind));
 
     void ConfigureSpecificSource<T, TConfiguration, TSource>(Func<TSource, T> getter, ServiceKind kind = ServiceKind.Singleton)
         where T : notnull
@@ -170,7 +170,7 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
         where TConfiguration : IServiceConfiguration, new()
         where TSource : notnull
         where TSourceConfiguration : IServiceConfiguration, new()
-        => ConfigureSpecific<T, TConfiguration>(new SourceConfiguration(ServiceTag.Create<TSource, TSourceConfiguration>(), async source => await getter((TSource)source), kind));
+        => ConfigureSpecific<T, TConfiguration>(new SourceConfiguration(ConfigurationTag.Create<TSourceConfiguration>(), async source => await getter((TSource)source), kind));
 
     void ConfigureSpecificSource<T, TConfiguration, TSource, TSourceConfiguration>(Func<TSource, T> getter, ServiceKind kind = ServiceKind.Singleton)
         where T : notnull
@@ -179,7 +179,7 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
         where TSourceConfiguration : IServiceConfiguration, new()
         => ConfigureSpecificSource<T, TConfiguration, TSource, TSourceConfiguration>(source => new ValueTask<T>(getter(source)), kind);
 
-    async ValueTask<object?> TryResolve(ServiceTag tag, Action<IServiceContainer> configure)
+    async ValueTask<object?> TryResolve(IServiceTag tag, Action<IServiceContainer> configure)
     {
         IServiceContainer context = this.DeriveContainer();
         configure(context);
@@ -202,12 +202,12 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
         }
     }
     
-    async ValueTask<object> Resolve(ServiceTag tag, Action<IServiceContainer> configure)
+    async ValueTask<object> Resolve(IServiceTag tag, Action<IServiceContainer> configure)
         => await TryResolve(tag, configure) ?? throw new InvalidOperationException();
 
     async ValueTask<IMaybe<T>> TryResolve<T>(Action<IServiceContainer> configure)
         where T : notnull
-        => (await TryResolve(ServiceTag.Create<T>(), configure)).AsNullableMaybe().Cast<T>();
+        => (await TryResolve(TypeTag.Create<T>(), configure)).AsNullableMaybe().Cast<T>();
 
     async ValueTask<T> Resolve<T>(Action<IServiceContainer> configure)
         where T : notnull
@@ -216,7 +216,7 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
     async ValueTask<IMaybe<T>> TryResolve<T, TConfiguration>(Action<IServiceContainer> configure)
         where T : notnull
         where TConfiguration : IServiceConfiguration, new()
-        => (await TryResolve(ServiceTag.Create<T, TConfiguration>(), configure)).AsNullableMaybe().Cast<T>();
+        => (await TryResolve(ConfigurationTag.Create<TConfiguration>(), configure)).AsNullableMaybe().Cast<T>();
 
     async ValueTask<T> Resolve<T, TConfiguration>(Action<IServiceContainer> configure)
         where T : notnull
@@ -237,20 +237,20 @@ public class ServiceContainer : ManagedAsyncDisposable, IServiceContainer
         : this(new DefaultConfigurationGenerator()) { }
 
     private readonly IServiceConfigurationGenerator generator;
-    private readonly Dictionary<ServiceTag, Entry> entries = new();
+    private readonly Dictionary<IServiceTag, Entry> entries = new();
 
     private IServiceContainer This => this;
 
-    public void Configure(ServiceTag tag, IServiceConfiguration configuration)
+    public void Configure(IServiceTag tag, IServiceConfiguration configuration)
         => SetEntry(tag, configuration);
 
-    public void Clear(ServiceTag tag)
+    public void Clear(IServiceTag tag)
         => entries.Remove(tag);
 
-    public async ValueTask<object?> TryResolve(ServiceTag tag)
+    public async ValueTask<object?> TryResolve(IServiceTag tag)
         => TryGetEntry(tag, out Entry? entry) ? await entry.Resolve() : null;
 
-    private Entry SetEntry(ServiceTag tag, IServiceConfiguration configuration)
+    private Entry SetEntry(IServiceTag tag, IServiceConfiguration configuration)
     {
         if (entries.TryGetValue(tag, out Entry? entry))
         {
@@ -263,7 +263,7 @@ public class ServiceContainer : ManagedAsyncDisposable, IServiceContainer
         return entry;
     }
 
-    private bool TryGetEntry(ServiceTag tag, [NotNullWhen(true)] out Entry? entry)
+    private bool TryGetEntry(IServiceTag tag, [NotNullWhen(true)] out Entry? entry)
     {
         if (entries.TryGetValue(tag, out entry))
         {
@@ -287,7 +287,7 @@ public class ServiceContainer : ManagedAsyncDisposable, IServiceContainer
 
     private class Entry : ManagedAsyncDisposable
     {
-        public Entry(IServiceResolver resolver, ServiceTag tag, IServiceConfiguration configuration)
+        public Entry(IServiceResolver resolver, IServiceTag tag, IServiceConfiguration configuration)
         {
             this.resolver = resolver;
 
@@ -303,7 +303,7 @@ public class ServiceContainer : ManagedAsyncDisposable, IServiceContainer
         private readonly IServiceResolver resolver;
         private readonly AsyncLazy<object>? singleton;
 
-        public ServiceTag Tag { get; }
+        public IServiceTag Tag { get; }
         public IServiceConfiguration Configuration { get; }
 
         public async ValueTask<object> Resolve()

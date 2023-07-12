@@ -9,6 +9,6 @@ public class ResolverConfigurationGenerator : IServiceConfigurationGenerator
 
     private readonly IServiceResolver resolver;
 
-    public IServiceConfiguration? Generate(ServiceTag tag)
+    public IServiceConfiguration? Generate(IServiceTag tag)
         => new RoutedBuilder(tag, resolver).AsTransient();
 }

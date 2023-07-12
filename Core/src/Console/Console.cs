@@ -1,4 +1,4 @@
 namespace Markwardt;
 
-[RoutedService<ISystemConsole>]
+[SubstituteAs<ISystemConsole>]
 public interface IConsole : IConsoleWriter, IConsoleReader { }

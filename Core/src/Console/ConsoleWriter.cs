@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-[RoutedService<IConsole>]
+[SubstituteAs<IConsole>]
 public interface IConsoleWriter
 {
     IObservable<(object Target, bool IsError)> Writes { get; }

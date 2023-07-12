@@ -24,6 +24,14 @@ public class ServiceArgumentGenerator : IServiceArgumentGenerator
 {
     public ServiceArgumentGenerator() { }
 
+    public ServiceArgumentGenerator(IDictionary<string, AsyncFunc<IServiceResolver, object?>> arguments)
+    {
+        foreach (KeyValuePair<string, AsyncFunc<IServiceResolver, object?>> argument in arguments)
+        {
+            Set(argument.Key, argument.Value);
+        }
+    }
+
     public ServiceArgumentGenerator(IDictionary<string, object?> arguments)
     {
         foreach (KeyValuePair<string, object?> argument in arguments)
@@ -32,9 +40,9 @@ public class ServiceArgumentGenerator : IServiceArgumentGenerator
         }
     }
 
-    private Dictionary<string, AsyncFunc<object?>> injectors = new();
+    private Dictionary<string, AsyncFunc<IServiceResolver, object?>> injectors = new();
 
-    protected void Set(string name, AsyncFunc<object?> getValue)
+    protected void Set(string name, AsyncFunc<IServiceResolver, object?> getValue)
         => injectors[name] = getValue;
 
     protected void Set(string name, Func<object?> getValue)
@@ -48,9 +56,9 @@ public class ServiceArgumentGenerator : IServiceArgumentGenerator
 
     public async ValueTask Generate(IServiceResolver resolver, IDictionary<string, object?> arguments)
     {
-        foreach (KeyValuePair<string, AsyncFunc<object?>> injector in injectors)
+        foreach (KeyValuePair<string, AsyncFunc<IServiceResolver, object?>> injector in injectors)
         {
-            arguments[injector.Key] = await injector.Value();
+            arguments[injector.Key] = await injector.Value(resolver);
         }
     }
 }

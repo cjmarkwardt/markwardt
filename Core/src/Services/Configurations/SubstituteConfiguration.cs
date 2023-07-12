@@ -1,8 +1,8 @@
 namespace Markwardt;
 
-public class RouteConfiguration : IServiceConfiguration
+public class SubstituteConfiguration : IServiceConfiguration
 {
-    public RouteConfiguration(ServiceTag target, IServiceResolver? resolver = null)
+    public SubstituteConfiguration(IServiceTag target, IServiceResolver? resolver = null)
     {
         Builder = new RoutedBuilder(target, resolver);
     }

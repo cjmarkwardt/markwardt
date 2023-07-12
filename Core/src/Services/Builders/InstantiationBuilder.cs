@@ -39,7 +39,7 @@ public class InstantiationBuilder : IServiceBuilder
 
         IEnumerable<MethodBase> methods = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(c => !IsCopyConstructor(c)).Cast<MethodBase>().Concat(type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
 
-        MethodBase? attributed = methods.FirstOrDefault(m => m.GetCustomAttribute<FactoryAttribute>() != null);
+        MethodBase? attributed = methods.FirstOrDefault(m => m.GetCustomAttribute<FactoryImplementationAttribute>() != null);
         if (attributed != null)
         {
             return attributed;

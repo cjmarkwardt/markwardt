@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-[RoutedService<IConsole>]
+[SubstituteAs<IConsole>]
 public interface IConsoleReader
 {
     ValueTask<string> Read(object? question = null);

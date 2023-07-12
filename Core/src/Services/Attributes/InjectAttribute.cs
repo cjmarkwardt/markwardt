@@ -1,6 +1,7 @@
 namespace Markwardt;
 
-public class InjectAttribute : Attribute
+[AttributeUsage(AttributeTargets.Parameter)]
+public class InjectAttribute : BaseInjectAttribute
 {
     public InjectAttribute(Type configuration)
     {
@@ -8,8 +9,12 @@ public class InjectAttribute : Attribute
     }
 
     public Type Configuration { get; }
+
+    public override IServiceTag GetTarget(Type type)
+        => new ConfigurationTag(Configuration);
 }
 
+[AttributeUsage(AttributeTargets.Parameter)]
 public class InjectAttribute<TConfiguration> : InjectAttribute
     where TConfiguration : IServiceConfiguration, new()
 {

@@ -5,6 +5,9 @@ public static class ArgumentOverrideBuilderUtils
     public static IServiceBuilder OverrideArguments(this IServiceBuilder builder, IServiceArgumentGenerator? generator)
         => generator == null ? builder : new ArgumentOverrideBuilder(builder, generator);
 
+    public static IServiceBuilder OverrideArguments(this IServiceBuilder builder, IDictionary<string, AsyncFunc<IServiceResolver, object?>>? arguments)
+        => arguments == null ? builder : builder.OverrideArguments(new ServiceArgumentGenerator(arguments));
+
     public static IServiceBuilder OverrideArguments(this IServiceBuilder builder, IDictionary<string, object?>? arguments)
         => arguments == null ? builder : builder.OverrideArguments(new ServiceArgumentGenerator(arguments));
 

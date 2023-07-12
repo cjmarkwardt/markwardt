@@ -114,16 +114,16 @@ public class InvocationBuilder : IServiceBuilder
                 return argument;
             }
 
-            if (parameter.TryGetCustomAttribute(out InjectAsAttribute? attribute))
+            if (parameter.TryGetCustomAttribute(out BaseInjectAttribute? injectAttribute))
             {
-                object? injectInstance = await resolver.TryResolve(attribute.Tag);
+                object? injectInstance = await resolver.TryResolve(injectAttribute.GetTarget(parameter.ParameterType));
                 if (injectInstance != null)
                 {
                     return injectInstance;
                 }
             }
             
-            object? instance = await resolver.TryResolve(new ServiceTag(parameter.ParameterType));
+            object? instance = await resolver.TryResolve(new TypeTag(parameter.ParameterType));
             if (instance != null)
             {
                 return instance;
