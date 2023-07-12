@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-public class SingletonAttribute : NaturalServiceAttribute
+public class SingletonAttribute : ServiceAttribute
 {
     public SingletonAttribute(Type? implementation = null, Type? arguments = null)
         : base(implementation, OpenServiceKind.Singleton, arguments) { }

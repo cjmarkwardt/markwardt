@@ -101,33 +101,41 @@ public class InvocationBuilder : IServiceBuilder
             object?[] resolvedArguments = new object?[parameters.Count];
             for (int i = 0; i < parameters.Count; i++)
             {
-                ParameterInfo parameter = parameters[i];
-                object? value;
-                if (arguments != null && arguments.TryGetValue(parameter.Name!.ToLower(), out object? argument))
-                {
-                    value = argument;
-                }
-                else
-                {
-                    Maybe<object?> instance = await resolver.Resolve(new ServiceTag(parameter.ParameterType));
-                    if (instance.HasValue)
-                    {
-                        value = instance.Value;
-                    }
-                    else if (parameter.HasDefaultValue)
-                    {
-                        value = parameter.DefaultValue;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Unable to resolve type {parameter.ParameterType} for parameter {parameter.Name}");
-                    }
-                }
-
-                resolvedArguments[i] = value;
+                resolvedArguments[i] = await ResolveArgument(resolver, arguments, parameters[i]);
             }
 
             return resolvedArguments;
+        }
+
+        private async ValueTask<object?> ResolveArgument(IServiceResolver resolver, IDictionary<string, object?>? arguments, ParameterInfo parameter)
+        {
+            if (arguments != null && arguments.TryGetValue(parameter.Name!.ToLower(), out object? argument))
+            {
+                return argument;
+            }
+
+            if (parameter.TryGetCustomAttribute(out InjectAsAttribute? attribute))
+            {
+                object? injectInstance = await resolver.TryResolve(attribute.Tag);
+                if (injectInstance != null)
+                {
+                    return injectInstance;
+                }
+            }
+            
+            object? instance = await resolver.TryResolve(new ServiceTag(parameter.ParameterType));
+            if (instance != null)
+            {
+                return instance;
+            }
+            else if (parameter.HasDefaultValue)
+            {
+                return parameter.DefaultValue;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unable to resolve type {parameter.ParameterType} for parameter {parameter.Name}");
+            }
         }
     }
 }

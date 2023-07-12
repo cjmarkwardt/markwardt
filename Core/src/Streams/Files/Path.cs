@@ -1,5 +1,11 @@
 namespace Markwardt;
 
+public static class PathUtils
+{
+    public static Path ToPath(this string text, string separator)
+        => new Path(text.Split(separator));
+}
+
 public class Path : IEquatable<Path?>
 {
     public static bool operator ==(Path? a, Path? b)

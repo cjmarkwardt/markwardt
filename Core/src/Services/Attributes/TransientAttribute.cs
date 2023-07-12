@@ -1,6 +1,6 @@
 namespace Markwardt;
 
-public class TransientAttribute : NaturalServiceAttribute
+public class TransientAttribute : ServiceAttribute
 {
     public TransientAttribute(Type? implementation = null, Type? arguments = null)
         : base(implementation, OpenServiceKind.Transient, arguments) { }

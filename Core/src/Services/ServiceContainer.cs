@@ -37,6 +37,11 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
         where TImplementation : T
         => Configure<T>(new ConstructorConfiguration(typeof(TImplementation), kind, arguments));
 
+    void ConfigureDelegateConstructor<TDelegate, TImplementation>(IDictionary<string, object?>? arguments = null)
+        where TDelegate : Delegate
+        where TImplementation : notnull
+        => Configure<TDelegate>(new InstantiationBuilder(typeof(TImplementation)).OverrideArguments(arguments).ThroughDelegate(typeof(TDelegate)).AsSingleton());
+
     void ConfigureFactory<T>(AsyncFunc<IServiceResolver, IDictionary<string, object?>?, T> factory, ServiceKind kind = ServiceKind.Singleton)
         where T : notnull
         => Configure<T>(new FactoryConfiguration(async (resolver, arguments) => await factory(resolver, arguments), kind));
@@ -111,6 +116,12 @@ public interface IServiceContainer : IServiceResolver, IMultiDisposable
         where TConfiguration : IServiceConfiguration, new()
         where TImplementation : T
         => ConfigureSpecific<T, TConfiguration>(new ConstructorConfiguration(typeof(TImplementation), kind, arguments));
+
+    void ConfigureSpecificDelegateConstructor<TDelegate, TConfiguration, TImplementation>(IDictionary<string, object?>? arguments = null)
+        where TDelegate : Delegate
+        where TConfiguration : IServiceConfiguration, new()
+        where TImplementation : notnull
+        => ConfigureSpecific<TDelegate, TConfiguration>(new InstantiationBuilder(typeof(TImplementation)).OverrideArguments(arguments).ThroughDelegate(typeof(TDelegate)).AsSingleton());
 
     void ConfigureSpecificFactory<T, TConfiguration>(AsyncFunc<IServiceResolver, IDictionary<string, object?>?, T> factory, ServiceKind kind = ServiceKind.Singleton)
         where T : notnull

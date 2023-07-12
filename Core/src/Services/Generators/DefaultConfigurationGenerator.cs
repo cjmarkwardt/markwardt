@@ -16,7 +16,7 @@ public class DefaultConfigurationGenerator : IServiceConfigurationGenerator
 
     private IServiceConfiguration? Scan(Type type)
     {
-        if (type.TryGetCustomAttribute(out ServiceAttribute? serviceAttribute))
+        if (type.TryGetCustomAttribute(out IServiceAttribute? serviceAttribute))
         {
             return serviceAttribute.GetConfiguration(type);
         }
