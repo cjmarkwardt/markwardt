@@ -12,9 +12,9 @@ public static class IdentifiableUtils
         => new Id<T>(target.Id);
 }
 
-public class Identifiable : IIdentifiable
+public class BaseIdentifiable : IIdentifiable
 {
-    public Identifiable(string id)
+    public BaseIdentifiable(string id)
     {
         Id = id;
     }
